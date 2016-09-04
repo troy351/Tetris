@@ -48,9 +48,47 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
             _classCallCheck(this, Tetris);
 
             this.options = options;
+
+            this._initInterface();
+            this._initGame();
         }
 
         _createClass(Tetris, [{
+            key: '_initInterface',
+            value: function _initInterface() {
+                var gameArea = document.getElementById(this.options.gameArea);
+
+                this.canvas = document.createElement('canvas');
+                gameArea.appendChild(this.canvas);
+                this.ctx = this.canvas.getContext('2d');
+
+                var tetrominoSize = 0;
+                if (document.body.clientWidth <= 700) {
+                    // mobile device
+                    tetrominoSize = Math.floor(document.body.clientWidth * 0.85 / 10);
+                } else {
+                    // desktop device
+                    tetrominoSize = 60;
+                }
+
+                var mapWidth = tetrominoSize * 10;
+                var mapHeight = tetrominoSize * 20;
+                var gap = tetrominoSize * 2;
+                var infoWidth = tetrominoSize * 6;
+
+                this.canvas.width = mapWidth + gap + infoWidth + gap;
+                this.canvas.height = mapHeight;
+                this.canvas.style.width = this.canvas.width / 2 + 'px';
+                this.canvas.style.height = this.canvas.height / 2 + 'px';
+            }
+        }, {
+            key: '_initGame',
+            value: function _initGame() {
+                this.map = new _tetrismap2.default(this.canvas.height / 20, this.ctx);
+
+                this.map._drawBackground();
+            }
+        }, {
             key: 'options',
             set: function set(_options) {
                 var options = {

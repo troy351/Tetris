@@ -1,5 +1,4 @@
-export default class Tetromino{
-    constructor(){
-
+export default class Tetromino {
+    constructor() {
     }
 }

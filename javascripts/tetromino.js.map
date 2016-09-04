@@ -1,1 +1,1 @@
-{"version":3,"sources":["src/tetromino.js"],"names":[],"mappings":";;;;;;;;;;;;;QAAqB,S,GACjB,qBAAa;AAAA;AAEZ,K;;sBAHgB,S","file":"tetromino.js","sourcesContent":["export default class Tetromino{\n    constructor(){\n\n    }\n}"]}
+{"version":3,"sources":["src/tetromino.js"],"names":[],"mappings":";;;;;;;;;;;;;QAAqB,S,GACjB,qBAAc;AAAA;AACb,K;;sBAFgB,S","file":"tetromino.js","sourcesContent":["export default class Tetromino {\n    constructor() {\n    }\n}"]}

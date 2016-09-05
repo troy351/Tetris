@@ -51,6 +51,7 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
 
             this._initInterface();
             this._initGame();
+            this._startGame();
         }
 
         _createClass(Tetris, [{
@@ -59,34 +60,116 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 var gameArea = document.getElementById(this.options.gameArea);
 
                 this.canvas = document.createElement('canvas');
+                this.canvas.innerText = 'Your browser doesn\'t support html5 canvas, please upgrade your browser.';
                 gameArea.appendChild(this.canvas);
                 this.ctx = this.canvas.getContext('2d');
 
+                this.gameConfig = {};
+                this.gameConfig.rows = 20;
+                this.gameConfig.columns = 10;
                 var tetrominoSize = 0;
-                if (document.body.clientWidth <= 700) {
-                    // mobile device
-                    tetrominoSize = Math.floor(document.body.clientWidth * 0.85 / 10);
+                if (document.body.clientWidth <= 767) {
+                    // phone
+                    tetrominoSize = Math.floor(document.body.clientWidth * 0.85 / this.gameConfig.columns);
+                } else if (document.body.clientWidth <= 959) {
+                    // pad
+                    tetrominoSize = 50;
                 } else {
-                    // desktop device
+                    // desktop
                     tetrominoSize = 60;
                 }
 
-                var mapWidth = tetrominoSize * 10;
-                var mapHeight = tetrominoSize * 20;
-                var gap = tetrominoSize * 2;
-                var infoWidth = tetrominoSize * 6;
+                this.gameConfig.tetrominoSize = tetrominoSize;
+                this.gameConfig.mapWidth = tetrominoSize * this.gameConfig.columns;
+                this.gameConfig.mapHeight = tetrominoSize * this.gameConfig.rows;
+                this.gameConfig.gap = tetrominoSize * 2;
+                this.gameConfig.infoWidth = tetrominoSize * 6;
 
-                this.canvas.width = mapWidth + gap + infoWidth + gap;
-                this.canvas.height = mapHeight;
+                this.canvas.width = this.gameConfig.mapWidth + this.gameConfig.gap + this.gameConfig.infoWidth + this.gameConfig.gap;
+                this.canvas.height = this.gameConfig.mapHeight;
                 this.canvas.style.width = this.canvas.width / 2 + 'px';
                 this.canvas.style.height = this.canvas.height / 2 + 'px';
             }
         }, {
             key: '_initGame',
             value: function _initGame() {
-                this.map = new _tetrismap2.default(this.canvas.height / 20, this.ctx);
+                var _this = this;
 
-                this.map._drawBackground();
+                var tetrominoSize = this.gameConfig.tetrominoSize;
+                var ctx = this.ctx;
+
+                this.map = new _tetrismap2.default(this.gameConfig, ctx);
+
+                this.map.drawBackground();
+                this.map.draw();
+
+                var drawLeftText = function drawLeftText(color, text, size, y) {
+                    ctx.fillStyle = color;
+                    ctx.font = 'bold ' + size + 'px Arial';
+                    ctx.textBaseline = 'top';
+                    // const mt = ctx.measureText(text);
+                    ctx.fillText(text, _this.gameConfig.mapWidth + _this.gameConfig.gap, y);
+                };
+
+                drawLeftText('black', 'NEXT', tetrominoSize, tetrominoSize * 2);
+                drawLeftText('black', 'SPEED', tetrominoSize, tetrominoSize * 11);
+                drawLeftText('black', 'SCORE', tetrominoSize, tetrominoSize * 15);
+
+                // get a random tetromino
+                this.tetromino = new _tetromino2.default(this.gameConfig, this.ctx);
+            }
+        }, {
+            key: '_startGame',
+            value: function _startGame() {
+                var _this2 = this;
+
+                _controller2.default.addListener(this.canvas, function (direction) {
+                    switch (direction) {
+                        case 'left':
+                            if (_this2.map.canTetrominoMove(_this2.tetromino, -1, 0)) {
+                                _this2.tetromino.move(-1, 0);
+                            }
+                            break;
+                        case 'right':
+                            if (_this2.map.canTetrominoMove(_this2.tetromino, 1, 0)) {
+                                _this2.tetromino.move(1, 0);
+                            }
+                            break;
+                        case 'down':
+                            if (_this2.map.canTetrominoMove(_this2.tetromino, 0, 3)) {
+                                _this2.tetromino.move(0, 3);
+                            } else {}
+                            break;
+                        case 'up':
+                            if (_this2.map.canTetrominoTransform(_this2.tetromino)) {
+                                _this2.tetromino.setShape(_this2.tetromino.getNextShape());
+                            }
+                            break;
+                    }
+
+                    // draw
+                    _this2.map.drawBackground();
+                    _this2.map.draw();
+                    _this2.tetromino.draw();
+                });
+
+                // tetromino auto down
+                setInterval(function () {
+                    // reach bottom
+                    if (_this2.map.reachBottom(_this2.tetromino)) {
+                        _this2.map.setTetrominoToMap(_this2.tetromino);
+                        _this2.tetromino = new _tetromino2.default(_this2.gameConfig, _this2.ctx);
+                    } else
+                        // down one block
+                        if (_this2.map.canTetrominoMove(_this2.tetromino, 0, 1)) {
+                            _this2.tetromino.move(0, 1);
+                        }
+
+                    // draw
+                    _this2.map.drawBackground();
+                    _this2.map.draw();
+                    _this2.tetromino.draw();
+                }, 1000);
             }
         }, {
             key: 'options',

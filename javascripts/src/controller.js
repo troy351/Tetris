@@ -55,7 +55,6 @@ export default class Controller {
     static _keyboardEvent(target, callback, bind) {
         if (this.keyUp === undefined) {
             this.keyUp = (event)=> {
-                console.log(event.keyCode);
                 switch (event.keyCode) {
                     case 87:// w
                     case 73:// i

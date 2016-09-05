@@ -92,7 +92,6 @@ define(['exports'], function (exports) {
             value: function _keyboardEvent(target, callback, bind) {
                 if (this.keyUp === undefined) {
                     this.keyUp = function (event) {
-                        console.log(event.keyCode);
                         switch (event.keyCode) {
                             case 87: // w
                             case 73:

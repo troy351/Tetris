@@ -53,8 +53,8 @@ export default class Controller {
     }
 
     static _keyboardEvent(target, callback, bind) {
-        if (this.keyUp === undefined) {
-            this.keyUp = (event)=> {
+        if (this.keyDown === undefined) {
+            this.keyDown = (event)=> {
                 switch (event.keyCode) {
                     case 87:// w
                     case 73:// i
@@ -77,9 +77,9 @@ export default class Controller {
         }
 
         if (bind) {
-            window.addEventListener('keyup', this.keyUp);
+            window.addEventListener('keydown', this.keyDown);
         } else {
-            window.removeEventListener('keyup', this.keyUp);
+            window.removeEventListener('keydown', this.keyDown);
         }
     }
 

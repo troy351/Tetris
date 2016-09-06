@@ -117,6 +117,10 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
 
                 // get a random tetromino
                 this.tetromino = new _tetromino2.default(this.gameConfig, this.ctx);
+                this.nextTetromino = new _tetromino2.default(this.gameConfig, this.ctx);
+
+                // draw next tetromino
+                this._drawNextTetromino();
             }
         }, {
             key: '_startGame',
@@ -137,8 +141,14 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                             break;
                         case 'down':
                             if (_this2.map.canTetrominoMove(_this2.tetromino, 0, 3)) {
+                                // can down 3 blocks
                                 _this2.tetromino.move(0, 3);
-                            } else {}
+                            } else {
+                                // less than 3 blocks reach bottom
+                                while (_this2.map.canTetrominoMove(_this2.tetromino, 0, 1)) {
+                                    _this2.tetromino.move(0, 1);
+                                }
+                            }
                             break;
                         case 'up':
                             if (_this2.map.canTetrominoTransform(_this2.tetromino)) {
@@ -155,21 +165,38 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
 
                 // tetromino auto down
                 setInterval(function () {
-                    // reach bottom
-                    if (_this2.map.reachBottom(_this2.tetromino)) {
-                        _this2.map.setTetrominoToMap(_this2.tetromino);
-                        _this2.tetromino = new _tetromino2.default(_this2.gameConfig, _this2.ctx);
-                    } else
+                    if (!_this2.map.canTetrominoMove(_this2.tetromino, 0, 1)) {
+                        // reach bottom
+                        _this2.map.setTetrominoToMap(_this2.tetromino, function () {
+                            // create a new tetromino
+                            _this2.tetromino = _this2.nextTetromino;
+                            _this2.nextTetromino = new _tetromino2.default(_this2.gameConfig, _this2.ctx);
+                            // draw next tetromino
+                            _this2._drawNextTetromino();
+                        });
+                    } else {
                         // down one block
-                        if (_this2.map.canTetrominoMove(_this2.tetromino, 0, 1)) {
-                            _this2.tetromino.move(0, 1);
-                        }
+                        _this2.tetromino.move(0, 1);
+                    }
 
                     // draw
                     _this2.map.drawBackground();
                     _this2.map.draw();
                     _this2.tetromino.draw();
                 }, 1000);
+            }
+        }, {
+            key: '_drawNextTetromino',
+            value: function _drawNextTetromino() {
+                var ctx = this.ctx;
+                var config = this.gameConfig;
+                var size = config.tetrominoSize;
+
+                // clean area
+                ctx.clearRect(config.columns * size + config.gap, size * 5, size * 4, size * 4);
+
+                // draw next tetromino
+                this.nextTetromino.draw(config.columns + config.gap / size + 2, 5 + 2);
             }
         }, {
             key: 'options',

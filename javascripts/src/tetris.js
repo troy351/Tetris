@@ -70,6 +70,10 @@ export default class Tetris {
 
         // get a random tetromino
         this.tetromino = new Tetromino(this.gameConfig, this.ctx);
+        this.nextTetromino = new Tetromino(this.gameConfig, this.ctx);
+
+        // draw next tetromino
+        this._drawNextTetromino();
     }
 
     _startGame() {
@@ -87,9 +91,13 @@ export default class Tetris {
                     break;
                 case 'down':
                     if (this.map.canTetrominoMove(this.tetromino, 0, 3)) {
+                        // can down 3 blocks
                         this.tetromino.move(0, 3);
                     } else {
-
+                        // less than 3 blocks reach bottom
+                        while (this.map.canTetrominoMove(this.tetromino, 0, 1)) {
+                            this.tetromino.move(0, 1);
+                        }
                     }
                     break;
                 case 'up':
@@ -107,13 +115,17 @@ export default class Tetris {
 
         // tetromino auto down
         setInterval(()=> {
-            // reach bottom
-            if(this.map.reachBottom(this.tetromino)){
-                this.map.setTetrominoToMap(this.tetromino);
-                this.tetromino = new Tetromino(this.gameConfig, this.ctx);
-            } else
-            // down one block
-            if (this.map.canTetrominoMove(this.tetromino, 0, 1)) {
+            if (!this.map.canTetrominoMove(this.tetromino, 0, 1)) {
+                // reach bottom
+                this.map.setTetrominoToMap(this.tetromino, ()=> {
+                    // create a new tetromino
+                    this.tetromino = this.nextTetromino;
+                    this.nextTetromino = new Tetromino(this.gameConfig, this.ctx);
+                    // draw next tetromino
+                    this._drawNextTetromino();
+                });
+            } else {
+                // down one block
                 this.tetromino.move(0, 1);
             }
 
@@ -122,6 +134,18 @@ export default class Tetris {
             this.map.draw();
             this.tetromino.draw();
         }, 1000);
+    }
+
+    _drawNextTetromino() {
+        const ctx = this.ctx;
+        const config = this.gameConfig;
+        const size = config.tetrominoSize;
+
+        // clean area
+        ctx.clearRect(config.columns * size + config.gap, size * 5, size * 4, size * 4);
+
+        // draw next tetromino
+        this.nextTetromino.draw(config.columns + config.gap / size + 2, 5 + 2);
     }
 
     set options(_options) {

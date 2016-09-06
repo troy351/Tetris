@@ -28,15 +28,18 @@ export default class Tetromino {
         this.shape = shape;
     }
 
-    draw() {
+    draw(x, y) {
+        x = x || this.mapX;
+        y = y || this.mapY;
+
         const s = Tetromino.modules[this.type].shape[this.shape];
         const size = this.config.tetrominoSize;
         const color = this.getColor();
         for (let i = 0; i < s.length; i++) {
-            const blockY = this.mapY + s[i][1];
+            const blockY = y + s[i][1];
             if (blockY >= 0) {
                 // in map area
-                this.drawBlock(color, (this.mapX + s[i][0]) * size, blockY * size);
+                this.drawBlock(color, (x + s[i][0]) * size, blockY * size);
             }
         }
     }

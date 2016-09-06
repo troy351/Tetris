@@ -38,12 +38,19 @@ export default class TetrisMap {
         }
     }
 
-    draw() {
+    draw(fullRows) {
+        fullRows = fullRows || [];
+
         const size = this.config.tetrominoSize;
         const rows = this.config.rows;
         const columns = this.config.columns;
 
         for (let i = rows - 1; i >= 0; i--) {
+            // skip drawing rows that in hide animation
+            if (fullRows[i] === true) {
+                continue;
+            }
+
             let isRowEmpty = true;
             for (let j = 0; j < columns; j++) {
                 if (this.map[i][j] !== '') {
@@ -83,26 +90,7 @@ export default class TetrisMap {
         return this._isTetrominoPositionLegal();
     }
 
-    reachBottom(tetromino) {
-        if (tetromino === undefined) {
-            return false;
-        }
-
-        const positions = tetromino.getShapePosition();
-
-        for (let i = 0; i < positions.length; i++) {
-            const x = positions[i][0];
-            const y = positions[i][1];
-            if (y + 1 === this.config.rows || this.map[y + 1][x] !== '') {
-                // reach bottom || there is a color block below
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    setTetrominoToMap(tetromino) {
+    setTetrominoToMap(tetromino, callback) {
         if (tetromino === undefined) {
             return false;
         }
@@ -114,6 +102,92 @@ export default class TetrisMap {
             const x = positions[i][0];
             const y = positions[i][1];
             this.map[y][x] = color;
+        }
+
+        // get full rows
+        const fullRows = [];
+        let hasFullRows = false;
+        for (let i = 0; i < positions.length; i++) {
+            // get row number of the one block in current tetromino
+            const row = positions[i][1];
+            // current row already calculated, skip
+            if (fullRows[row] !== undefined) {
+                continue;
+            }
+
+            let isFull = true;
+            for (let j = 0; j < this.config.columns; j++) {
+                if (this.map[row][j] === '') {
+                    isFull = false;
+                }
+            }
+
+            hasFullRows = isFull ? true : hasFullRows;
+            fullRows[row] = isFull;
+        }
+
+        // has full rows
+        if (hasFullRows) {
+            this._shiningBlocks(fullRows, 3, 200, callback);
+        } else {
+            callback();
+        }
+    }
+
+    _shiningBlocks(fullRows, times, duration, callback) {
+        times = times || 3;
+        let curTimes = 0;
+        // for each show and hide, double times and half duration
+        times *= 2;
+        duration /= 2;
+
+        const shining = setInterval(()=> {
+            curTimes++;
+
+            this.drawBackground();
+
+            if (curTimes % 2 === 0) {
+                // hide full rows
+                this.draw(fullRows);
+            } else {
+                // show full rows
+                this.draw();
+            }
+
+            // animation complete
+            if (curTimes >= times) {
+                clearInterval(shining);
+                this._deleteFullRows(fullRows);
+                callback();
+            }
+        }, duration);
+    }
+
+    _deleteFullRows(fullRows) {
+        // delete `false` key in fullRows and sort it.
+        const fr = [];
+        for (let key in fullRows) {
+            if (fullRows[key] === true) {
+                fr.push(parseInt(key));
+            }
+        }
+        fr.sort((a, b)=> {
+            return b - a;
+        });
+
+        // the row number will be affected by the under row wiping.
+        for (let i = 0; i < fr.length; i++) {
+            fr[i] += i;
+        }
+
+        // replace full rows with above rows, and empty above rows.
+        for (let k = 0; k < fr.length; k++) {
+            for (let i = fr[k] - 1; i >= 0; i--) {
+                for (let j = 0; j < this.config.columns; j++) {
+                    this.map[i + 1][j] = this.map[i][j];
+                    this.map[i][j] = '';
+                }
+            }
         }
     }
 

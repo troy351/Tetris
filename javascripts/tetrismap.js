@@ -80,12 +80,19 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
             }
         }, {
             key: 'draw',
-            value: function draw() {
+            value: function draw(fullRows) {
+                fullRows = fullRows || [];
+
                 var size = this.config.tetrominoSize;
                 var rows = this.config.rows;
                 var columns = this.config.columns;
 
                 for (var i = rows - 1; i >= 0; i--) {
+                    // skip drawing rows that in hide animation
+                    if (fullRows[i] === true) {
+                        continue;
+                    }
+
                     var isRowEmpty = true;
                     for (var j = 0; j < columns; j++) {
                         if (this.map[i][j] !== '') {
@@ -127,28 +134,8 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
                 return this._isTetrominoPositionLegal();
             }
         }, {
-            key: 'reachBottom',
-            value: function reachBottom(tetromino) {
-                if (tetromino === undefined) {
-                    return false;
-                }
-
-                var positions = tetromino.getShapePosition();
-
-                for (var i = 0; i < positions.length; i++) {
-                    var x = positions[i][0];
-                    var y = positions[i][1];
-                    if (y + 1 === this.config.rows || this.map[y + 1][x] !== '') {
-                        // reach bottom || there is a color block below
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }, {
             key: 'setTetrominoToMap',
-            value: function setTetrominoToMap(tetromino) {
+            value: function setTetrominoToMap(tetromino, callback) {
                 if (tetromino === undefined) {
                     return false;
                 }
@@ -160,6 +147,96 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
                     var x = positions[i][0];
                     var y = positions[i][1];
                     this.map[y][x] = color;
+                }
+
+                // get full rows
+                var fullRows = [];
+                var hasFullRows = false;
+                for (var _i = 0; _i < positions.length; _i++) {
+                    // get row number of the one block in current tetromino
+                    var row = positions[_i][1];
+                    // current row already calculated, skip
+                    if (fullRows[row] !== undefined) {
+                        continue;
+                    }
+
+                    var isFull = true;
+                    for (var j = 0; j < this.config.columns; j++) {
+                        if (this.map[row][j] === '') {
+                            isFull = false;
+                        }
+                    }
+
+                    hasFullRows = isFull ? true : hasFullRows;
+                    fullRows[row] = isFull;
+                }
+
+                // has full rows
+                if (hasFullRows) {
+                    this._shiningBlocks(fullRows, 3, 200, callback);
+                } else {
+                    callback();
+                }
+            }
+        }, {
+            key: '_shiningBlocks',
+            value: function _shiningBlocks(fullRows, times, duration, callback) {
+                var _this = this;
+
+                times = times || 3;
+                var curTimes = 0;
+                // for each show and hide, double times and half duration
+                times *= 2;
+                duration /= 2;
+
+                var shining = setInterval(function () {
+                    curTimes++;
+
+                    _this.drawBackground();
+
+                    if (curTimes % 2 === 0) {
+                        // hide full rows
+                        _this.draw(fullRows);
+                    } else {
+                        // show full rows
+                        _this.draw();
+                    }
+
+                    // animation complete
+                    if (curTimes >= times) {
+                        clearInterval(shining);
+                        _this._deleteFullRows(fullRows);
+                        callback();
+                    }
+                }, duration);
+            }
+        }, {
+            key: '_deleteFullRows',
+            value: function _deleteFullRows(fullRows) {
+                // delete `false` key in fullRows and sort it.
+                var fr = [];
+                for (var key in fullRows) {
+                    if (fullRows[key] === true) {
+                        fr.push(parseInt(key));
+                    }
+                }
+                fr.sort(function (a, b) {
+                    return b - a;
+                });
+
+                // the row number will be affected by the under row wiping.
+                for (var i = 0; i < fr.length; i++) {
+                    fr[i] += i;
+                }
+
+                // replace full rows with above rows, and empty above rows.
+                for (var k = 0; k < fr.length; k++) {
+                    for (var _i2 = fr[k] - 1; _i2 >= 0; _i2--) {
+                        for (var j = 0; j < this.config.columns; j++) {
+                            this.map[_i2 + 1][j] = this.map[_i2][j];
+                            this.map[_i2][j] = '';
+                        }
+                    }
                 }
             }
         }, {

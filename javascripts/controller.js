@@ -113,6 +113,8 @@ define(['exports'], function (exports) {
                                 // l
                                 callback('right');
                                 break;
+                            default:
+                                callback('other');
                         }
                     };
                 }

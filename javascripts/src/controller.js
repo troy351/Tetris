@@ -72,6 +72,8 @@ export default class Controller {
                     case 76:// l
                         callback('right');
                         break;
+                    default:
+                        callback('other');
                 }
             };
         }

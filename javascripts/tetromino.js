@@ -80,6 +80,23 @@ define(["exports"], function (exports) {
                 }
             }
         }, {
+            key: "drawOutline",
+            value: function drawOutline(positions) {
+                if (positions === undefined) {
+                    return;
+                }
+
+                var size = this.config.tetrominoSize;
+                var color = this.getColor();
+                for (var i = 0; i < positions.length; i++) {
+                    var blockY = positions[i][1];
+                    if (blockY >= 0) {
+                        // in map area
+                        this.drawBlockOutline(color, positions[i][0] * size, blockY * size);
+                    }
+                }
+            }
+        }, {
             key: "getShapePosition",
             value: function getShapePosition(shape, offsetX, offsetY) {
                 if (shape === null || shape === undefined) {
@@ -115,6 +132,19 @@ define(["exports"], function (exports) {
             key: "getColor",
             value: function getColor() {
                 return Tetromino.modules[this.type].color;
+            }
+        }, {
+            key: "drawBlockOutline",
+            value: function drawBlockOutline(color, x, y) {
+                var ctx = this.ctx;
+                var size = this.config.tetrominoSize;
+                var lineWidth = 6;
+
+                ctx.lineWidth = lineWidth;
+                ctx.strokeStyle = color;
+                ctx.strokeRect(x + lineWidth, y + lineWidth, size - lineWidth * 2, size - lineWidth * 2);
+                // return line width to normal
+                ctx.lineWidth = 1;
             }
         }, {
             key: "drawBlock",

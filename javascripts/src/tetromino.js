@@ -1,4 +1,5 @@
 export default class Tetromino {
+
     constructor(config, ctx) {
         this.config = config;
         this.ctx = ctx;
@@ -44,6 +45,22 @@ export default class Tetromino {
         }
     }
 
+    drawOutline(positions) {
+        if (positions === undefined) {
+            return;
+        }
+
+        const size = this.config.tetrominoSize;
+        const color = this.getColor();
+        for (let i = 0; i < positions.length; i++) {
+            const blockY = positions[i][1];
+            if (blockY >= 0) {
+                // in map area
+                this.drawBlockOutline(color, positions[i][0] * size, blockY * size);
+            }
+        }
+    }
+
     getShapePosition(shape, offsetX, offsetY) {
         if (shape === null || shape === undefined) {
             shape = this.shape;
@@ -76,6 +93,18 @@ export default class Tetromino {
 
     getColor() {
         return Tetromino.modules[this.type].color;
+    }
+
+    drawBlockOutline(color, x, y) {
+        const ctx = this.ctx;
+        const size = this.config.tetrominoSize;
+        const lineWidth = 6;
+
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color;
+        ctx.strokeRect(x + lineWidth, y + lineWidth, size - lineWidth * 2, size - lineWidth * 2);
+        // return line width to normal
+        ctx.lineWidth = 1;
     }
 
     drawBlock(color, x, y) {

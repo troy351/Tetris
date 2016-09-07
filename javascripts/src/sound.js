@@ -1,4 +1,5 @@
 export default class Sound {
+
     constructor(file) {
         this.audio = new Audio(file);
     }

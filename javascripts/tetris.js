@@ -50,7 +50,6 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
             this.options = options;
 
             this._initInterface();
-            this._initGame();
             this._startGame();
         }
 
@@ -70,36 +69,63 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 var tetrominoSize = 0;
                 if (document.body.clientWidth <= 767) {
                     // phone
-                    tetrominoSize = Math.floor(document.body.clientWidth * 0.85 / this.gameConfig.columns);
+                    tetrominoSize = 2 * Math.floor(document.body.clientWidth * 0.85 / (this.gameConfig.columns + 6));
                 } else if (document.body.clientWidth <= 959) {
                     // pad
-                    tetrominoSize = 50;
+                    tetrominoSize = 56;
                 } else {
                     // desktop
-                    tetrominoSize = 60;
+                    tetrominoSize = 64;
                 }
 
                 this.gameConfig.tetrominoSize = tetrominoSize;
                 this.gameConfig.mapWidth = tetrominoSize * this.gameConfig.columns;
                 this.gameConfig.mapHeight = tetrominoSize * this.gameConfig.rows;
-                this.gameConfig.gap = tetrominoSize * 2;
-                this.gameConfig.infoWidth = tetrominoSize * 6;
+                this.gameConfig.gap = tetrominoSize;
+                this.gameConfig.infoWidth = tetrominoSize * 4;
 
                 this.canvas.width = this.gameConfig.mapWidth + this.gameConfig.gap + this.gameConfig.infoWidth + this.gameConfig.gap;
                 this.canvas.height = this.gameConfig.mapHeight;
                 this.canvas.style.width = this.canvas.width / 2 + 'px';
                 this.canvas.style.height = this.canvas.height / 2 + 'px';
+
+                // controlArea for controller
+                _controller2.default.controlArea = {
+                    top: 197,
+                    left: (window.innerWidth - this.canvas.width / 2) / 2,
+                    right: (window.innerWidth + this.canvas.width / 2) / 2,
+                    bottom: 197 + this.canvas.height / 2
+                };
+
+                // first start screen
+                this._gameEnd(false);
+
+                // load sound
+                this.soundGlint = new _sound2.default('sounds/glint.wav');
+                this.soundLand = new _sound2.default('sounds/land.wav');
+                this.soundMove = new _sound2.default('sounds/move.wav');
+                this.soundTrans = new _sound2.default('sounds/trans.wav');
+
+                // safari won't auto load sound unless user clicked
+                // there is a trick that play sound 1ms while user touches canvas first time
+                if (navigator.userAgent.match(/(iPad|iPhone)/)) {
+                    this.canvas.setAttribute('ontouchstart', '\n            window.soundMove.loadForSafari();\n            window.soundGlint.loadForSafari();\n            window.soundLand.loadForSafari();\n            window.soundTrans.loadForSafari();\n            delete window.soundMove;\n            delete window.soundGlint;\n            delete window.soundLand;\n            delete window.soundTrans;\n            this.removeAttribute("ontouchstart");'.replace(/            /g, '').split('\n').join(''));
+
+                    window.soundMove = this.soundMove;
+                    window.soundGlint = this.soundGlint;
+                    window.soundLand = this.soundLand;
+                    window.soundTrans = this.soundTrans;
+                }
             }
         }, {
-            key: '_initGame',
-            value: function _initGame() {
+            key: '_resetGameData',
+            value: function _resetGameData() {
                 var tetrominoSize = this.gameConfig.tetrominoSize;
                 var ctx = this.ctx;
                 // clear canvas
                 ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
                 this.map = new _tetrismap2.default(this.gameConfig, ctx);
-
                 this.map.drawBackground();
                 this.map.draw();
 
@@ -121,7 +147,42 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 this.score = 0;
                 this._drawLeftText('black', this.score, tetrominoSize, 1, tetrominoSize * 17);
 
-                this.gameover = false;
+                localStorage.TetrisUnfinishedGame = true;
+            }
+        }, {
+            key: '_recoverGameData',
+            value: function _recoverGameData() {
+                var tetrominoSize = this.gameConfig.tetrominoSize;
+                var ctx = this.ctx;
+                // clear canvas
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.map = new _tetrismap2.default(this.gameConfig, ctx);
+                this.map.load('TetrisMap');
+                this.map.drawBackground();
+                this.map.draw();
+
+                this._drawLeftText('black', 'NEXT', tetrominoSize, 0, tetrominoSize * 2);
+                this._drawLeftText('black', 'SPEED', tetrominoSize, 0, tetrominoSize * 11);
+                this._drawLeftText('black', 'SCORE', tetrominoSize, 0, tetrominoSize * 15);
+
+                // get a random tetromino
+                this.tetromino = new _tetromino2.default(this.gameConfig, this.ctx);
+                this.tetromino.load('TetrisTetromino');
+                this.nextTetromino = new _tetromino2.default(this.gameConfig, this.ctx);
+                this.nextTetromino.load('TetrisNextTetromino');
+
+                // draw next tetromino
+                this._drawNextTetromino();
+                // draw speed
+                this.count = parseInt(localStorage.TetrisCount);
+                this.speed = parseInt(localStorage.TetrisSpeed);
+                this._drawLeftText('black', this.speed, tetrominoSize, 1, tetrominoSize * 13);
+                // draw score
+                this.score = parseInt(localStorage.TetrisScore);
+                this._drawLeftText('black', this.score, tetrominoSize, 1, tetrominoSize * 17);
+
+                localStorage.TetrisUnfinishedGame = true;
             }
         }, {
             key: '_startGame',
@@ -129,31 +190,45 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 var _this = this;
 
                 _controller2.default.addListener(this.canvas, function (direction) {
-                    if (_this.gameover) {
-                        // reset game data
-                        _this._initGame();
-                        // restart auto down
+                    if (_this.staticScreen) {
+                        // if has saved game data
+                        if (localStorage.TetrisUnfinishedGame !== undefined) {
+                            if (confirm('An unfinished game detected, do you want to continue what you left?')) {
+                                _this._recoverGameData();
+                            } else {
+                                _this._resetGameData();
+                            }
+                        } else {
+                            _this._resetGameData();
+                        }
+
+                        _this.staticScreen = false;
+                        // start auto down
                         setTimeout(autoDown, 1000 - _this.speed);
                     } else {
                         switch (direction) {
                             case 'left':
+                                _this.soundMove.replay();
                                 if (_this.map.canTetrominoMove(_this.tetromino, -1, 0)) {
                                     _this.tetromino.move(-1, 0);
                                     _this.map.updateTetrominoFixedPosition(_this.tetromino);
                                 }
                                 break;
                             case 'right':
+                                _this.soundMove.replay();
                                 if (_this.map.canTetrominoMove(_this.tetromino, 1, 0)) {
                                     _this.tetromino.move(1, 0);
                                     _this.map.updateTetrominoFixedPosition(_this.tetromino);
                                 }
                                 break;
                             case 'down':
+                                _this.soundMove.replay();
                                 if (_this.map.canTetrominoMove(_this.tetromino, 0, 1)) {
                                     _this.tetromino.move(0, 1);
                                 }
                                 break;
                             case 'up':
+                                _this.soundTrans.replay();
                                 if (_this.map.canTetrominoTransform(_this.tetromino)) {
                                     _this.tetromino.setShape(_this.tetromino.getNextShape());
                                     _this.map.updateTetrominoFixedPosition(_this.tetromino);
@@ -173,7 +248,8 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 var autoDown = function autoDown() {
                     if (!_this.map.canTetrominoMove(_this.tetromino, 0, 1)) {
                         // reach bottom
-                        _this.map.setTetrominoToMap(_this.tetromino, function () {
+                        _this.soundLand.replay();
+                        _this.map.setTetrominoToMap(_this.tetromino, _this.soundGlint, function () {
                             // calc & update score
                             _this.score += _this.map.getScore();
                             _this._drawLeftText('black', _this.score, _this.gameConfig.tetrominoSize, 1, _this.gameConfig.tetrominoSize * 17);
@@ -189,11 +265,14 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                                 _this._drawLeftText('black', _this.speed, _this.gameConfig.tetrominoSize, 1, _this.gameConfig.tetrominoSize * 13);
                             }
 
+                            // save data
+                            _this._saveData();
+
                             // next turn
                             if (_this.map.canTetrominoMove(_this.tetromino, 0, 1)) {
                                 autoDown();
                             } else {
-                                _this._gameOver();
+                                _this._gameEnd(true);
                             }
                         });
                     } else {
@@ -204,15 +283,23 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                     }
 
                     // draw
-                    if (!_this.gameover) {
+                    if (!_this.staticScreen) {
                         _this.map.drawBackground();
                         _this.map.draw();
                         _this.map.drawTetrominoFixedPosition(_this.tetromino);
                         _this.tetromino.draw();
                     }
                 };
-
-                setTimeout(autoDown, 1000 - this.speed);
+            }
+        }, {
+            key: '_saveData',
+            value: function _saveData() {
+                localStorage.TetrisCount = this.count;
+                localStorage.TetrisSpeed = this.speed;
+                localStorage.TetrisScore = this.score;
+                this.map.save('TetrisMap');
+                this.tetromino.save('TetrisTetromino');
+                this.nextTetromino.save('TetrisNextTetromino');
             }
         }, {
             key: '_drawNextTetromino',
@@ -231,9 +318,14 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 this.map.updateTetrominoFixedPosition(this.tetromino);
             }
         }, {
-            key: '_gameOver',
-            value: function _gameOver() {
-                this.gameover = true;
+            key: '_gameEnd',
+            value: function _gameEnd(isOver) {
+                if (isOver) {
+                    localStorage.removeItem('TetrisUnfinishedGame');
+                }
+
+                this.staticScreen = true;
+
                 var ctx = this.ctx;
                 var config = this.gameConfig;
                 var size = config.tetrominoSize;
@@ -252,10 +344,12 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 ctx.fillStyle = 'rgba(115, 115, 115, .8)';
                 ctx.fillRect(0, 0, config.mapWidth, config.mapHeight);
 
-                // draw `Game Over`
-                drawMapCenterText('Game Over', 'green', 'white', size * 1.4, .35);
-                // draw `press any key to restart`
-                drawMapCenterText('press any key to restart', 'white', 'transparent', size * .6, .5);
+                // draw title
+                var title = isOver ? 'Game Over' : 'Welcome';
+                drawMapCenterText(title, 'green', 'white', size * 1.4, .35);
+                // draw tips
+                var status = isOver ? 'restart' : 'start';
+                drawMapCenterText('press any key to ' + status, 'white', 'transparent', size * .6, .5);
             }
         }, {
             key: '_drawLeftText',

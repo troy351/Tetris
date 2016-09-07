@@ -1,6 +1,7 @@
 import Tetromino from 'javascripts/tetromino';
 
 export default class TetrisMap {
+
     constructor(config, ctx) {
         this.config = config;
         this.ctx = ctx;
@@ -23,10 +24,7 @@ export default class TetrisMap {
         const columns = this.config.columns;
 
         // draw a gradient background color
-        const lineGradient = ctx.createLinearGradient(0, 0, size * columns, size * rows);
-        lineGradient.addColorStop(0, '#082877');
-        lineGradient.addColorStop(1, '#040a1b');
-        ctx.fillStyle = lineGradient;
+        ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(0, 0, size * columns, size * rows);
 
         // draw a white grid
@@ -130,8 +128,26 @@ export default class TetrisMap {
         if (hasFullRows) {
             this._shiningBlocks(fullRows, 3, 200, callback);
         } else {
+            this.score = 0;
             callback();
         }
+    }
+
+    updateTetrominoFixedPosition(tetromino) {
+        let y = 0;
+        while (this.canTetrominoMove(tetromino, 0, y + 1)) {
+            y++;
+        }
+
+        this.outlinePositions = tetromino.getShapePosition(null, 0, y);
+    }
+
+    drawTetrominoFixedPosition(tetromino) {
+        tetromino.drawOutline(this.outlinePositions);
+    }
+
+    getScore() {
+        return this.score;
     }
 
     _shiningBlocks(fullRows, times, duration, callback) {
@@ -174,6 +190,9 @@ export default class TetrisMap {
         fr.sort((a, b)=> {
             return b - a;
         });
+
+        // calc score
+        this.score = 100 * (fr.length * 2 - 1);
 
         // the row number will be affected by the under row wiping.
         for (let i = 0; i < fr.length; i++) {

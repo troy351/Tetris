@@ -64,10 +64,7 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
                 var columns = this.config.columns;
 
                 // draw a gradient background color
-                var lineGradient = ctx.createLinearGradient(0, 0, size * columns, size * rows);
-                lineGradient.addColorStop(0, '#082877');
-                lineGradient.addColorStop(1, '#040a1b');
-                ctx.fillStyle = lineGradient;
+                ctx.fillStyle = '#1a1a1a';
                 ctx.fillRect(0, 0, size * columns, size * rows);
 
                 // draw a white grid
@@ -175,8 +172,29 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
                 if (hasFullRows) {
                     this._shiningBlocks(fullRows, 3, 200, callback);
                 } else {
+                    this.score = 0;
                     callback();
                 }
+            }
+        }, {
+            key: 'updateTetrominoFixedPosition',
+            value: function updateTetrominoFixedPosition(tetromino) {
+                var y = 0;
+                while (this.canTetrominoMove(tetromino, 0, y + 1)) {
+                    y++;
+                }
+
+                this.outlinePositions = tetromino.getShapePosition(null, 0, y);
+            }
+        }, {
+            key: 'drawTetrominoFixedPosition',
+            value: function drawTetrominoFixedPosition(tetromino) {
+                tetromino.drawOutline(this.outlinePositions);
+            }
+        }, {
+            key: 'getScore',
+            value: function getScore() {
+                return this.score;
             }
         }, {
             key: '_shiningBlocks',
@@ -223,6 +241,9 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
                 fr.sort(function (a, b) {
                     return b - a;
                 });
+
+                // calc score
+                this.score = 100 * (fr.length * 2 - 1);
 
                 // the row number will be affected by the under row wiping.
                 for (var i = 0; i < fr.length; i++) {

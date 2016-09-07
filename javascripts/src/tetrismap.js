@@ -88,7 +88,7 @@ export default class TetrisMap {
         return this._isTetrominoPositionLegal();
     }
 
-    setTetrominoToMap(tetromino, callback) {
+    setTetrominoToMap(tetromino, sound, callback) {
         if (tetromino === undefined) {
             return false;
         }
@@ -126,6 +126,7 @@ export default class TetrisMap {
 
         // has full rows
         if (hasFullRows) {
+            sound.replay();
             this._shiningBlocks(fullRows, 3, 200, callback);
         } else {
             this.score = 0;
@@ -148,6 +149,16 @@ export default class TetrisMap {
 
     getScore() {
         return this.score;
+    }
+
+    save(key) {
+        key = key || 'TetrisMap';
+        localStorage[key] = JSON.stringify(this.map);
+    }
+
+    load(key) {
+        key = key || 'TetrisMap';
+        this.map = localStorage[key] = JSON.parse(localStorage[key]);
     }
 
     _shiningBlocks(fullRows, times, duration, callback) {

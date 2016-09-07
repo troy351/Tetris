@@ -132,7 +132,7 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
             }
         }, {
             key: 'setTetrominoToMap',
-            value: function setTetrominoToMap(tetromino, callback) {
+            value: function setTetrominoToMap(tetromino, sound, callback) {
                 if (tetromino === undefined) {
                     return false;
                 }
@@ -170,6 +170,7 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
 
                 // has full rows
                 if (hasFullRows) {
+                    sound.replay();
                     this._shiningBlocks(fullRows, 3, 200, callback);
                 } else {
                     this.score = 0;
@@ -195,6 +196,18 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
             key: 'getScore',
             value: function getScore() {
                 return this.score;
+            }
+        }, {
+            key: 'save',
+            value: function save(key) {
+                key = key || 'TetrisMap';
+                localStorage[key] = JSON.stringify(this.map);
+            }
+        }, {
+            key: 'load',
+            value: function load(key) {
+                key = key || 'TetrisMap';
+                this.map = localStorage[key] = JSON.parse(localStorage[key]);
             }
         }, {
             key: '_shiningBlocks',

@@ -163,6 +163,7 @@ export default class Tetris {
                     this._resetGameData();
                 }
 
+                this._saveData();
                 this.staticScreen = false;
                 // start auto down
                 setTimeout(autoDown, 900 - this.speed);

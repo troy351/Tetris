@@ -202,6 +202,7 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                             _this._resetGameData();
                         }
 
+                        _this._saveData();
                         _this.staticScreen = false;
                         // start auto down
                         setTimeout(autoDown, 900 - _this.speed);

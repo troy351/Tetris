@@ -41,16 +41,20 @@ define(["exports"], function (exports) {
             this.type = Math.floor(Math.random() * modules.length);
             this.shape = Math.floor(Math.random() * modules[this.type].shape.length);
 
-            // set initial coordinates
-            this.mapX = Math.floor(config.columns / 2);
-            this.mapY = -1;
-            if (this.type == 0 || this.type == 1 && this.shape == 1 || this.type == 4 && this.shape == 1 || this.type == 5 && this.shape == 3 || this.type == 6 && this.shape == 0) {
-                // no blocks below the core block
-                this.mapY = 0;
-            }
+            this._initCoordinates();
         }
 
         _createClass(Tetromino, [{
+            key: "_initCoordinates",
+            value: function _initCoordinates() {
+                this.mapX = Math.floor(this.config.columns / 2);
+                this.mapY = -1;
+                if (this.type == 0 || this.type == 1 && this.shape == 1 || this.type == 4 && this.shape == 1 || this.type == 5 && this.shape == 3 || this.type == 6 && this.shape == 0) {
+                    // no blocks below the core block
+                    this.mapY = 0;
+                }
+            }
+        }, {
             key: "getNextShape",
             value: function getNextShape() {
                 return (this.shape + 1) % Tetromino.modules[this.type].shape.length;
@@ -230,6 +234,107 @@ define(["exports"], function (exports) {
                 // center rect
                 ctx.fillStyle = color;
                 ctx.fillRect(x + gap, y + gap, centerSize, centerSize);
+            }
+        }, {
+            key: "BOOM",
+            value: function BOOM(actualX, actualY) {
+
+                // Shim with setTimeout fallback
+
+                var laX = actualX;
+                var laY = actualY;
+                var W = canvas.width = window.innerWidth;
+                var H = canvas.height = window.innerHeight;
+                // Let's set our gravity
+                var gravity = 1;
+
+                // Time to write a neat constructor for our
+                // particles.
+                // Lets initialize a random color to use for
+                // our particles and also define the particle
+                // count.
+                var particle_count = parseInt(Math.random() * 30);
+                var particles = [];
+
+                var random_color = 'rgb(' + parseInt(Math.random() * 255) + ',' + parseInt(Math.random() * 255) + ',' + parseInt(Math.random() * 255) + ')';
+
+                function Particle() {
+                    this.radius = parseInt(Math.random() * 8);
+                    this.x = actualX;
+                    this.y = actualY;
+
+                    this.color = random_color;
+
+                    // Random Initial Velocities
+                    this.vx = Math.random() * 4 - 2;
+                    // vy should be negative initially
+                    // then only will it move upwards first
+                    // and then later come downwards when our
+                    // gravity is added to it.
+                    this.vy = Math.random() * -14 - 1;
+
+                    // Finally, the function to draw
+                    // our particle
+                    this.draw = function () {
+                        ctx.fillStyle = this.color;
+
+                        ctx.beginPath();
+
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                        ctx.fill();
+
+                        ctx.closePath();
+                    };
+                }
+
+                // Now lets quickly create our particle
+                // objects and store them in particles array
+                for (var i = 0; i < particle_count; i++) {
+                    var particle = new Particle();
+                    particles.push(particle);
+                }
+
+                // Finally, writing down the code to animate!
+                (function renderFrame() {
+                    requestAnimationFrame(renderFrame);
+
+                    // Clearing screen to prevent trails
+                    ctx.clearRect(0, 0, W, H);
+
+                    particles.forEach(function (particle) {
+
+                        // The particles simply go upwards
+                        // It MUST come down, so lets apply gravity
+                        particle.vy += gravity;
+
+                        // Adding velocity to x and y axis
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+
+                        // We're almost done! All we need to do now
+                        // is to reposition the particles as soon
+                        // as they move off the canvas.
+                        // We'll also need to re-set the velocities
+
+                        particle.draw();
+                    });
+                })();
+            }
+        }, {
+            key: "save",
+            value: function save(key) {
+                key = key || 'TetrisTetromino';
+                var t = { type: this.type, shape: this.shape };
+                localStorage[key] = JSON.stringify(t);
+            }
+        }, {
+            key: "load",
+            value: function load(key) {
+                key = key || 'TetrisTetromino';
+                var t = JSON.parse(localStorage[key]);
+                this.type = parseInt(t.type);
+                this.shape = parseInt(t.shape);
+                this._initCoordinates();
             }
         }], [{
             key: "colorLuminance",

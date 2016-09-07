@@ -93,27 +93,19 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
         }, {
             key: '_initGame',
             value: function _initGame() {
-                var _this = this;
-
                 var tetrominoSize = this.gameConfig.tetrominoSize;
                 var ctx = this.ctx;
+                // clear canvas
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
                 this.map = new _tetrismap2.default(this.gameConfig, ctx);
 
                 this.map.drawBackground();
                 this.map.draw();
 
-                var drawLeftText = function drawLeftText(color, text, size, y) {
-                    ctx.fillStyle = color;
-                    ctx.font = 'bold ' + size + 'px Arial';
-                    ctx.textBaseline = 'top';
-                    // const mt = ctx.measureText(text);
-                    ctx.fillText(text, _this.gameConfig.mapWidth + _this.gameConfig.gap, y);
-                };
-
-                drawLeftText('black', 'NEXT', tetrominoSize, tetrominoSize * 2);
-                drawLeftText('black', 'SPEED', tetrominoSize, tetrominoSize * 11);
-                drawLeftText('black', 'SCORE', tetrominoSize, tetrominoSize * 15);
+                this._drawLeftText('black', 'NEXT', tetrominoSize, 0, tetrominoSize * 2);
+                this._drawLeftText('black', 'SPEED', tetrominoSize, 0, tetrominoSize * 11);
+                this._drawLeftText('black', 'SCORE', tetrominoSize, 0, tetrominoSize * 15);
 
                 // get a random tetromino
                 this.tetromino = new _tetromino2.default(this.gameConfig, this.ctx);
@@ -121,69 +113,106 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
 
                 // draw next tetromino
                 this._drawNextTetromino();
+                // draw speed
+                this.count = 1;
+                this.speed = 50;
+                this._drawLeftText('black', this.speed, tetrominoSize, 1, tetrominoSize * 13);
+                // draw score
+                this.score = 0;
+                this._drawLeftText('black', this.score, tetrominoSize, 1, tetrominoSize * 17);
+
+                this.gameover = false;
             }
         }, {
             key: '_startGame',
             value: function _startGame() {
-                var _this2 = this;
+                var _this = this;
 
                 _controller2.default.addListener(this.canvas, function (direction) {
-                    switch (direction) {
-                        case 'left':
-                            if (_this2.map.canTetrominoMove(_this2.tetromino, -1, 0)) {
-                                _this2.tetromino.move(-1, 0);
-                            }
-                            break;
-                        case 'right':
-                            if (_this2.map.canTetrominoMove(_this2.tetromino, 1, 0)) {
-                                _this2.tetromino.move(1, 0);
-                            }
-                            break;
-                        case 'down':
-                            if (_this2.map.canTetrominoMove(_this2.tetromino, 0, 3)) {
-                                // can down 3 blocks
-                                _this2.tetromino.move(0, 3);
-                            } else {
-                                // less than 3 blocks reach bottom
-                                while (_this2.map.canTetrominoMove(_this2.tetromino, 0, 1)) {
-                                    _this2.tetromino.move(0, 1);
+                    if (_this.gameover) {
+                        // reset game data
+                        _this._initGame();
+                        // restart auto down
+                        setTimeout(autoDown, 1000 - _this.speed);
+                    } else {
+                        switch (direction) {
+                            case 'left':
+                                if (_this.map.canTetrominoMove(_this.tetromino, -1, 0)) {
+                                    _this.tetromino.move(-1, 0);
+                                    _this.map.updateTetrominoFixedPosition(_this.tetromino);
                                 }
-                            }
-                            break;
-                        case 'up':
-                            if (_this2.map.canTetrominoTransform(_this2.tetromino)) {
-                                _this2.tetromino.setShape(_this2.tetromino.getNextShape());
-                            }
-                            break;
+                                break;
+                            case 'right':
+                                if (_this.map.canTetrominoMove(_this.tetromino, 1, 0)) {
+                                    _this.tetromino.move(1, 0);
+                                    _this.map.updateTetrominoFixedPosition(_this.tetromino);
+                                }
+                                break;
+                            case 'down':
+                                if (_this.map.canTetrominoMove(_this.tetromino, 0, 1)) {
+                                    _this.tetromino.move(0, 1);
+                                }
+                                break;
+                            case 'up':
+                                if (_this.map.canTetrominoTransform(_this.tetromino)) {
+                                    _this.tetromino.setShape(_this.tetromino.getNextShape());
+                                    _this.map.updateTetrominoFixedPosition(_this.tetromino);
+                                }
+                                break;
+                        }
                     }
 
                     // draw
-                    _this2.map.drawBackground();
-                    _this2.map.draw();
-                    _this2.tetromino.draw();
+                    _this.map.drawBackground();
+                    _this.map.draw();
+                    _this.map.drawTetrominoFixedPosition(_this.tetromino);
+                    _this.tetromino.draw();
                 });
 
                 // tetromino auto down
-                setInterval(function () {
-                    if (!_this2.map.canTetrominoMove(_this2.tetromino, 0, 1)) {
+                var autoDown = function autoDown() {
+                    if (!_this.map.canTetrominoMove(_this.tetromino, 0, 1)) {
                         // reach bottom
-                        _this2.map.setTetrominoToMap(_this2.tetromino, function () {
+                        _this.map.setTetrominoToMap(_this.tetromino, function () {
+                            // calc & update score
+                            _this.score += _this.map.getScore();
+                            _this._drawLeftText('black', _this.score, _this.gameConfig.tetrominoSize, 1, _this.gameConfig.tetrominoSize * 17);
                             // create a new tetromino
-                            _this2.tetromino = _this2.nextTetromino;
-                            _this2.nextTetromino = new _tetromino2.default(_this2.gameConfig, _this2.ctx);
+                            _this.tetromino = _this.nextTetromino;
+                            _this.nextTetromino = new _tetromino2.default(_this.gameConfig, _this.ctx);
+                            _this.count++;
                             // draw next tetromino
-                            _this2._drawNextTetromino();
+                            _this._drawNextTetromino();
+                            // calc & update speed
+                            if (_this.count % 30 === 0 && _this.speed < 850) {
+                                _this.speed += 50;
+                                _this._drawLeftText('black', _this.speed, _this.gameConfig.tetrominoSize, 1, _this.gameConfig.tetrominoSize * 13);
+                            }
+
+                            // next turn
+                            if (_this.map.canTetrominoMove(_this.tetromino, 0, 1)) {
+                                autoDown();
+                            } else {
+                                _this._gameOver();
+                            }
                         });
                     } else {
                         // down one block
-                        _this2.tetromino.move(0, 1);
+                        _this.tetromino.move(0, 1);
+                        // next turn
+                        setTimeout(autoDown, 1000 - _this.speed);
                     }
 
                     // draw
-                    _this2.map.drawBackground();
-                    _this2.map.draw();
-                    _this2.tetromino.draw();
-                }, 1000);
+                    if (!_this.gameover) {
+                        _this.map.drawBackground();
+                        _this.map.draw();
+                        _this.map.drawTetrominoFixedPosition(_this.tetromino);
+                        _this.tetromino.draw();
+                    }
+                };
+
+                setTimeout(autoDown, 1000 - this.speed);
             }
         }, {
             key: '_drawNextTetromino',
@@ -193,10 +222,54 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 var size = config.tetrominoSize;
 
                 // clean area
-                ctx.clearRect(config.columns * size + config.gap, size * 5, size * 4, size * 4);
+                ctx.clearRect(config.columns * size + config.gap, size * 4, size * 4, size * 4);
 
                 // draw next tetromino
-                this.nextTetromino.draw(config.columns + config.gap / size + 2, 5 + 2);
+                this.nextTetromino.draw(config.columns + config.gap / size + 2, 5 + 1);
+
+                // draw current tetromino fixed position
+                this.map.updateTetrominoFixedPosition(this.tetromino);
+            }
+        }, {
+            key: '_gameOver',
+            value: function _gameOver() {
+                this.gameover = true;
+                var ctx = this.ctx;
+                var config = this.gameConfig;
+                var size = config.tetrominoSize;
+
+                var drawMapCenterText = function drawMapCenterText(text, color, strokeColor, fontSize, yPercent) {
+                    ctx.fillStyle = color;
+                    ctx.strokeStyle = strokeColor;
+                    ctx.font = 'bold ' + fontSize + 'px Arial';
+                    ctx.textBaseline = 'top';
+                    var ms = ctx.measureText(text);
+                    ctx.fillText(text, (config.mapWidth - ms.width) / 2, config.mapHeight * yPercent);
+                    ctx.strokeText(text, (config.mapWidth - ms.width) / 2, config.mapHeight * yPercent);
+                };
+
+                // draw mask
+                ctx.fillStyle = 'rgba(115, 115, 115, .8)';
+                ctx.fillRect(0, 0, config.mapWidth, config.mapHeight);
+
+                // draw `Game Over`
+                drawMapCenterText('Game Over', 'green', 'white', size * 1.4, .35);
+                // draw `press any key to restart`
+                drawMapCenterText('press any key to restart', 'white', 'transparent', size * .6, .5);
+            }
+        }, {
+            key: '_drawLeftText',
+            value: function _drawLeftText(color, text, size, offsetX, y) {
+                var ctx = this.ctx;
+                var config = this.gameConfig;
+
+                ctx.fillStyle = color;
+                ctx.font = 'bold ' + size + 'px Arial';
+                ctx.textBaseline = 'top';
+                // swipe original text
+                ctx.clearRect(config.mapWidth + config.gap + offsetX * config.tetrominoSize, y, config.tetrominoSize * text.toString().length, config.tetrominoSize);
+                // draw new text
+                ctx.fillText(text, config.mapWidth + config.gap + offsetX * config.tetrominoSize, y);
             }
         }, {
             key: 'options',

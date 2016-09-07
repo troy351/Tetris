@@ -165,7 +165,7 @@ export default class Tetris {
 
                 this.staticScreen = false;
                 // start auto down
-                setTimeout(autoDown, 1000 - this.speed);
+                setTimeout(autoDown, 900 - this.speed);
             } else {
                 switch (direction) {
                     case 'left':
@@ -221,7 +221,7 @@ export default class Tetris {
                     // draw next tetromino
                     this._drawNextTetromino();
                     // calc & update speed
-                    if (this.count % 30 === 0 && this.speed < 850) {
+                    if (this.count % 20 === 0 && this.speed < 750) {
                         this.speed += 50;
                         this._drawLeftText('black', this.speed, this.gameConfig.tetrominoSize, 1, this.gameConfig.tetrominoSize * 13);
                     }
@@ -240,7 +240,7 @@ export default class Tetris {
                 // down one block
                 this.tetromino.move(0, 1);
                 // next turn
-                setTimeout(autoDown, 1000 - this.speed);
+                setTimeout(autoDown, 900 - this.speed);
             }
 
             // draw

@@ -204,7 +204,7 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
 
                         _this.staticScreen = false;
                         // start auto down
-                        setTimeout(autoDown, 1000 - _this.speed);
+                        setTimeout(autoDown, 900 - _this.speed);
                     } else {
                         switch (direction) {
                             case 'left':
@@ -260,7 +260,7 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                             // draw next tetromino
                             _this._drawNextTetromino();
                             // calc & update speed
-                            if (_this.count % 30 === 0 && _this.speed < 850) {
+                            if (_this.count % 20 === 0 && _this.speed < 750) {
                                 _this.speed += 50;
                                 _this._drawLeftText('black', _this.speed, _this.gameConfig.tetrominoSize, 1, _this.gameConfig.tetrominoSize * 13);
                             }
@@ -279,7 +279,7 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                         // down one block
                         _this.tetromino.move(0, 1);
                         // next turn
-                        setTimeout(autoDown, 1000 - _this.speed);
+                        setTimeout(autoDown, 900 - _this.speed);
                     }
 
                     // draw

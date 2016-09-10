@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        h2 {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        table {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+            border-spacing: 0;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            padding: 10px 0;
+            font-size: 20px;
+            border: 1px solid black;
+        }
+
+        table td {
+            position: relative;
+            height: 50px;
+            line-height: 0;
+        }
+
+        table i {
+            position: absolute;
+            display: block;
+            width: 10px;
+            height: 10px;
+            left: calc(50% - 5px);
+            top: calc(50% - 5px);
+            font-style: normal;
+            background: gray;
+        }
+
+        table i.core {
+            background: red;
+        }
+
+        table i.l1 {
+            margin-left: -6px;
+        }
+
+        table i.l2 {
+            margin-left: -18px;
+        }
+
+        table i.lh3 {
+            margin-left: -12px;
+        }
+
+        table i.r1 {
+            margin-left: 6px;
+        }
+
+        table i.r2 {
+            margin-left: 18px;
+        }
+
+        table i.rh3 {
+            margin-left: 12px;
+        }
+
+        table i.t1 {
+            margin-top: -6px;
+        }
+
+        table i.t2 {
+            margin-top: -18px;
+        }
+
+        table i.th3 {
+            margin-top: -12px;
+        }
+
+        table i.b1 {
+            margin-top: 6px;
+        }
+
+        table i.b2 {
+            margin-top: 18px;
+        }
+
+        table i.bh3 {
+            margin-top: 12px;
+        }
+
+        p {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<h2>Tetromino Design</h2>
+<table>
+    <thead>
+    <tr>
+        <th>TYPE</th>
+        <th>Shape 1</th>
+        <th>Shape 2</th>
+        <th>Shape 3</th>
+        <th>Shape 4</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>O</td>
+        <td><i class="l1 t1"></i><i class="r1 t1"></i><i class="l1 b1"></i><i class="r1 b1 core"></i></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>I</td>
+        <td><i class="t2"></i><i class="t1"></i><i class="b1 core"></i><i class="b2"></i></td>
+        <td><i class="l2"></i><i class="l1"></i><i class="r1 core"></i><i class="r2"></i></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>S</td>
+        <td><i class="l1 th3"></i><i class="l1"></i><i class="r1 core"></i><i class="r1 bh3"></i></td>
+        <td><i class="t1"></i><i class="t1 rh3"></i><i class="lh3 b1"></i><i class="b1 core"></i></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Z</td>
+        <td><i class="r1 th3"></i><i class="l1"></i><i class="r1 core"></i><i class="l1 bh3"></i></td>
+        <td><i class="lh3 t1"></i><i class="t1"></i><i class="b1 core"></i><i class="rh3 b1"></i></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>L</td>
+        <td><i class="l1 th3"></i><i class="r1 th3"></i><i class="r1 core"></i><i class="r1 bh3"></i></td>
+        <td><i class="rh3 t1"></i><i class="b1 lh3"></i><i class="b1 core"></i><i class="rh3 b1"></i></td>
+        <td><i class="l1 th3"></i><i class="l1 core"></i><i class="l1 bh3"></i><i class="r1 bh3"></i></td>
+        <td><i class="lh3 t1"></i><i class="t1 core"></i><i class="rh3 t1"></i><i class="lh3 b1"></i></td>
+    </tr>
+    <tr>
+        <td>J</td>
+        <td><i class="l1 th3"></i><i class="r1 th3"></i><i class="l1 core"></i><i class="l1 bh3"></i></td>
+        <td><i class="t1 lh3"></i><i class="t1 core"></i><i class="rh3 t1"></i><i class="rh3 b1"></i></td>
+        <td><i class="r1 th3"></i><i class="r1 core"></i><i class="l1 bh3"></i><i class="r1 bh3"></i></td>
+        <td><i class="lh3 t1"></i><i class="b1 core"></i><i class="rh3 b1"></i><i class="lh3 b1"></i></td>
+    </tr>
+    <tr>
+        <td>T</td>
+        <td><i class="t1"></i><i class="lh3 b1"></i><i class="b1 core"></i><i class="rh3 b1"></i></td>
+        <td><i class="l1 th3"></i><i class="l1 core"></i><i class="r1"></i><i class="l1 bh3"></i></td>
+        <td><i class="lh3 t1"></i><i class="t1 core"></i><i class="rh3 t1"></i><i class="b1"></i></td>
+        <td><i class="r1 th3"></i><i class="l1"></i><i class="r1 core"></i><i class="r1 bh3"></i></td>
+    </tr>
+    </tbody>
+</table>
+<p>*Attention: the red blocks is the center of tetromino while transforming. In other words, the position of red blocks
+    are <code>[0, 0]</code>.</p>
+</body>
+</html>

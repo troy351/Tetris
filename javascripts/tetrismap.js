@@ -77,8 +77,8 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
             }
         }, {
             key: 'draw',
-            value: function draw(fullRows) {
-                fullRows = fullRows || [];
+            value: function draw() {
+                var fullRows = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 
                 var size = this.config.tetrominoSize;
                 var rows = this.config.rows;
@@ -118,21 +118,21 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
             }
         }, {
             key: 'canTetrominoMove',
-            value: function canTetrominoMove(tetromino, offsetX, offsetY) {
+            value: function canTetrominoMove(tetromino) {
+                var offsetX = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+                var offsetY = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+
                 if (tetromino === undefined) {
                     return false;
                 }
 
-                offsetX = offsetX || 0;
-                offsetY = offsetY || 0;
-
-                this.tetrominoPositions = tetromino.getShapePosition(null, offsetX, offsetY);
+                this.tetrominoPositions = tetromino.getShapePosition(undefined, offsetX, offsetY);
 
                 return this._isTetrominoPositionLegal();
             }
         }, {
             key: 'setTetrominoToMap',
-            value: function setTetrominoToMap(tetromino, sound, callback) {
+            value: function setTetrominoToMap(tetromino, landSound, glintSound, callback) {
                 if (tetromino === undefined) {
                     return false;
                 }
@@ -170,9 +170,10 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
 
                 // has full rows
                 if (hasFullRows) {
-                    sound.replay();
+                    glintSound.replay();
                     this._shiningBlocks(fullRows, 3, 200, callback);
                 } else {
+                    landSound.replay();
                     this.score = 0;
                     callback();
                 }
@@ -185,7 +186,7 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
                     y++;
                 }
 
-                this.outlinePositions = tetromino.getShapePosition(null, 0, y);
+                this.outlinePositions = tetromino.getShapePosition(undefined, 0, y);
             }
         }, {
             key: 'drawTetrominoFixedPosition',
@@ -199,22 +200,28 @@ define(['exports', 'javascripts/tetromino'], function (exports, _tetromino) {
             }
         }, {
             key: 'save',
-            value: function save(key) {
-                key = key || 'TetrisMap';
+            value: function save() {
+                var key = arguments.length <= 0 || arguments[0] === undefined ? 'TetrisMap' : arguments[0];
+
                 localStorage[key] = JSON.stringify(this.map);
             }
         }, {
             key: 'load',
-            value: function load(key) {
-                key = key || 'TetrisMap';
+            value: function load() {
+                var key = arguments.length <= 0 || arguments[0] === undefined ? 'TetrisMap' : arguments[0];
+
                 this.map = localStorage[key] = JSON.parse(localStorage[key]);
             }
         }, {
             key: '_shiningBlocks',
-            value: function _shiningBlocks(fullRows, times, duration, callback) {
+            value: function _shiningBlocks(fullRows) {
+                var times = arguments.length <= 1 || arguments[1] === undefined ? 3 : arguments[1];
+
                 var _this = this;
 
-                times = times || 3;
+                var duration = arguments[2];
+                var callback = arguments[3];
+
                 var curTimes = 0;
                 // for each show and hide, double times and half duration
                 times *= 2;

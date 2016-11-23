@@ -249,8 +249,7 @@ define(['exports', 'javascripts/tetromino', 'javascripts/tetrismap', 'javascript
                 var autoDown = function autoDown() {
                     if (!_this.map.canTetrominoMove(_this.tetromino, 0, 1)) {
                         // reach bottom
-                        _this.soundLand.replay();
-                        _this.map.setTetrominoToMap(_this.tetromino, _this.soundGlint, function () {
+                        _this.map.setTetrominoToMap(_this.tetromino, _this.soundLand, _this.soundGlint, function () {
                             // calc & update score
                             _this.score += _this.map.getScore();
                             _this._drawLeftText('black', _this.score, _this.gameConfig.tetrominoSize, 1, _this.gameConfig.tetrominoSize * 17);

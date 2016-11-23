@@ -25,16 +25,11 @@ export default class Tetromino {
         return (this.shape + 1) % Tetromino.modules[this.type].shape.length;
     }
 
-    setShape(shape) {
-        shape = shape || 0;
-
+    setShape(shape = 0) {
         this.shape = shape;
     }
 
-    draw(x, y) {
-        x = x || this.mapX;
-        y = y || this.mapY;
-
+    draw(x = this.mapX, y = this.mapY) {
         const s = Tetromino.modules[this.type].shape[this.shape];
         const size = this.config.tetrominoSize;
         const color = this.getColor();
@@ -63,14 +58,7 @@ export default class Tetromino {
         }
     }
 
-    getShapePosition(shape, offsetX, offsetY) {
-        if (shape === null || shape === undefined) {
-            shape = this.shape;
-        }
-
-        offsetX = offsetX || 0;
-        offsetY = offsetY || 0;
-
+    getShapePosition(shape = this.shape, offsetX = 0, offsetY = 0) {
         const positions = [];
         const s = Tetromino.modules[this.type].shape[shape];
 
@@ -85,10 +73,7 @@ export default class Tetromino {
         return positions;
     }
 
-    move(offsetX, offsetY) {
-        offsetX = offsetX || 0;
-        offsetY = offsetY || 0;
-
+    move(offsetX = 0, offsetY = 0) {
         this.mapX += offsetX;
         this.mapY += offsetY;
     }
@@ -218,14 +203,12 @@ export default class Tetromino {
         return rgb;
     }
 
-    save(key) {
-        key = key || 'TetrisTetromino';
+    save(key = 'TetrisTetromino') {
         const t = {type: this.type, shape: this.shape};
         localStorage[key] = JSON.stringify(t);
     }
 
-    load(key) {
-        key = key || 'TetrisTetromino';
+    load(key = 'TetrisTetromino') {
         const t = JSON.parse(localStorage[key]);
         this.type = parseInt(t.type);
         this.shape = parseInt(t.shape);

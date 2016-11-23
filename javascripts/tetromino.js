@@ -61,16 +61,16 @@ define(["exports"], function (exports) {
             }
         }, {
             key: "setShape",
-            value: function setShape(shape) {
-                shape = shape || 0;
+            value: function setShape() {
+                var shape = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
 
                 this.shape = shape;
             }
         }, {
             key: "draw",
-            value: function draw(x, y) {
-                x = x || this.mapX;
-                y = y || this.mapY;
+            value: function draw() {
+                var x = arguments.length <= 0 || arguments[0] === undefined ? this.mapX : arguments[0];
+                var y = arguments.length <= 1 || arguments[1] === undefined ? this.mapY : arguments[1];
 
                 var s = Tetromino.modules[this.type].shape[this.shape];
                 var size = this.config.tetrominoSize;
@@ -102,13 +102,10 @@ define(["exports"], function (exports) {
             }
         }, {
             key: "getShapePosition",
-            value: function getShapePosition(shape, offsetX, offsetY) {
-                if (shape === null || shape === undefined) {
-                    shape = this.shape;
-                }
-
-                offsetX = offsetX || 0;
-                offsetY = offsetY || 0;
+            value: function getShapePosition() {
+                var shape = arguments.length <= 0 || arguments[0] === undefined ? this.shape : arguments[0];
+                var offsetX = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+                var offsetY = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
 
                 var positions = [];
                 var s = Tetromino.modules[this.type].shape[shape];
@@ -125,9 +122,9 @@ define(["exports"], function (exports) {
             }
         }, {
             key: "move",
-            value: function move(offsetX, offsetY) {
-                offsetX = offsetX || 0;
-                offsetY = offsetY || 0;
+            value: function move() {
+                var offsetX = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+                var offsetY = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
 
                 this.mapX += offsetX;
                 this.mapY += offsetY;
@@ -237,15 +234,17 @@ define(["exports"], function (exports) {
             }
         }, {
             key: "save",
-            value: function save(key) {
-                key = key || 'TetrisTetromino';
+            value: function save() {
+                var key = arguments.length <= 0 || arguments[0] === undefined ? 'TetrisTetromino' : arguments[0];
+
                 var t = { type: this.type, shape: this.shape };
                 localStorage[key] = JSON.stringify(t);
             }
         }, {
             key: "load",
-            value: function load(key) {
-                key = key || 'TetrisTetromino';
+            value: function load() {
+                var key = arguments.length <= 0 || arguments[0] === undefined ? 'TetrisTetromino' : arguments[0];
+
                 var t = JSON.parse(localStorage[key]);
                 this.type = parseInt(t.type);
                 this.shape = parseInt(t.shape);

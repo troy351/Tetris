@@ -210,8 +210,7 @@ export default class Tetris {
         const autoDown = ()=> {
             if (!this.map.canTetrominoMove(this.tetromino, 0, 1)) {
                 // reach bottom
-                this.soundLand.replay();
-                this.map.setTetrominoToMap(this.tetromino, this.soundGlint, ()=> {
+                this.map.setTetrominoToMap(this.tetromino, this.soundLand, this.soundGlint, ()=> {
                     // calc & update score
                     this.score += this.map.getScore();
                     this._drawLeftText('black', this.score, this.gameConfig.tetrominoSize, 1, this.gameConfig.tetrominoSize * 17);

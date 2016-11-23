@@ -36,9 +36,7 @@ export default class TetrisMap {
         }
     }
 
-    draw(fullRows) {
-        fullRows = fullRows || [];
-
+    draw(fullRows = []) {
         const size = this.config.tetrominoSize;
         const rows = this.config.rows;
         const columns = this.config.columns;
@@ -75,20 +73,17 @@ export default class TetrisMap {
         return this._isTetrominoPositionLegal();
     }
 
-    canTetrominoMove(tetromino, offsetX, offsetY) {
+    canTetrominoMove(tetromino, offsetX = 0, offsetY = 0) {
         if (tetromino === undefined) {
             return false;
         }
 
-        offsetX = offsetX || 0;
-        offsetY = offsetY || 0;
-
-        this.tetrominoPositions = tetromino.getShapePosition(null, offsetX, offsetY);
+        this.tetrominoPositions = tetromino.getShapePosition(undefined, offsetX, offsetY);
 
         return this._isTetrominoPositionLegal();
     }
 
-    setTetrominoToMap(tetromino, sound, callback) {
+    setTetrominoToMap(tetromino, landSound, glintSound, callback) {
         if (tetromino === undefined) {
             return false;
         }
@@ -126,9 +121,10 @@ export default class TetrisMap {
 
         // has full rows
         if (hasFullRows) {
-            sound.replay();
+            glintSound.replay();
             this._shiningBlocks(fullRows, 3, 200, callback);
         } else {
+            landSound.replay();
             this.score = 0;
             callback();
         }
@@ -140,7 +136,7 @@ export default class TetrisMap {
             y++;
         }
 
-        this.outlinePositions = tetromino.getShapePosition(null, 0, y);
+        this.outlinePositions = tetromino.getShapePosition(undefined, 0, y);
     }
 
     drawTetrominoFixedPosition(tetromino) {
@@ -151,18 +147,15 @@ export default class TetrisMap {
         return this.score;
     }
 
-    save(key) {
-        key = key || 'TetrisMap';
+    save(key = 'TetrisMap') {
         localStorage[key] = JSON.stringify(this.map);
     }
 
-    load(key) {
-        key = key || 'TetrisMap';
+    load(key = 'TetrisMap') {
         this.map = localStorage[key] = JSON.parse(localStorage[key]);
     }
 
-    _shiningBlocks(fullRows, times, duration, callback) {
-        times = times || 3;
+    _shiningBlocks(fullRows, times = 3, duration, callback) {
         let curTimes = 0;
         // for each show and hide, double times and half duration
         times *= 2;
